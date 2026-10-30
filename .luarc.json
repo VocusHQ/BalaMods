@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "runtime.version": "LuaJIT",
+  "workspace.library": [
+    "${env:APPDATA}/Balatro/Mods/smods/lsp_def"
+  ],
+  "workspace.checkThirdParty": false,
+  "diagnostics.globals": ["SMODS", "G", "love", "sendInfoMessage", "sendDebugMessage", "sendWarnMessage", "sendErrorMessage"]
+}

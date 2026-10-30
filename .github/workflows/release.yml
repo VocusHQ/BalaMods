@@ -1,0 +1,36 @@
+# Push a tag named <ModId>-v<version> (e.g. MyMod-v0.1.0) to publish a
+# GitHub Release containing only that mod as a zip.
+name: Release mod
+
+on:
+  push:
+    tags: ["*-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Package mod
+        id: pkg
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          MOD="${TAG%-v*}"
+          VERSION="${TAG##*-v}"
+          test -d "mods/$MOD" || { echo "mods/$MOD not found"; exit 1; }
+          MANIFEST_VERSION=$(jq -r .version "mods/$MOD/manifest.json")
+          test "$MANIFEST_VERSION" = "$VERSION" || { echo "manifest.json version ($MANIFEST_VERSION) != tag ($VERSION)"; exit 1; }
+          cd mods && zip -r "../$MOD-v$VERSION.zip" "$MOD" -x "*/.gitkeep"
+          echo "zip=$MOD-v$VERSION.zip" >> "$GITHUB_OUTPUT"
+          echo "mod=$MOD" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ steps.pkg.outputs.mod }} v${{ steps.pkg.outputs.version }}
+          files: ${{ steps.pkg.outputs.zip }}
+          generate_release_notes: true
