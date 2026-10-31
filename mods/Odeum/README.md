@@ -1,8 +1,9 @@
 # Odeum
 
-Soundtrack packs for Balatro. Each pack replaces the game's music with its own song and
+Locked's collection of tracks and sounds for Balatro. Each soundtrack pack replaces the game's music with its own song and
 brings its own title logo. Pick the active pack in **Mods → Odeum → Config → Soundtrack**;
-switching is instant, and **Vanilla** turns everything back to the original game.
+switching is instant. Each pack also has its own **Volume** and **Speed** sliders
+(speed changes pitch too, like a record player). **Vanilla** turns everything back to the original game.
 
 ## Requirements
 - [Lovely](https://github.com/ethangreen-dev/lovely-injector)

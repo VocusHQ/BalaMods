@@ -1,13 +1,17 @@
 {
   "id": "Odeum",
   "name": "Odeum",
-  "author": ["VocusHQ"],
-  "description": "Soundtrack packs: each pack brings its own music and title logo. Choose one in the config tab.",
+  "author": [
+    "Locked"
+  ],
+  "description": "Locked's collection of tracks and sounds for Balatro. Each soundtrack pack brings its own music and title logo: pick one, and tune its volume and speed, in the config tab.",
   "prefix": "odeum",
   "main_file": "main.lua",
   "priority": 0,
   "badge_colour": "4A90E2",
   "badge_text_colour": "FFFFFF",
   "version": "0.1.0",
-  "dependencies": ["Steamodded (>=1.0.0~BETA)"]
+  "dependencies": [
+    "Steamodded (>=1.0.0~BETA)"
+  ]
 }

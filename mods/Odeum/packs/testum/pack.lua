@@ -2,7 +2,7 @@
 -- Proves that switching packs, the five synced variants and the title logo work.
 return {
     name = "Testum",
-    author = "VocusHQ",
+    author = "Locked",
     description = "Placeholder loop for testing Odeum",
     volume = 0.6,   -- 0..1, vanilla music plays at 0.6
     pitch = 1,      -- playback speed; vanilla plays its own tracks at 0.7

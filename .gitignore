@@ -17,3 +17,9 @@ mods/Odeum/packs/takanaka*/
 
 # Python
 __pycache__/
+
+# LMMS render temp files
+music/**/.render*
+
+# SoundFonts: large downloads, fetched locally (see music/README.md)
+music/soundfonts/

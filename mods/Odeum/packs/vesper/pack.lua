@@ -1,9 +1,9 @@
--- Vesper: music not made yet. Odeum skips this pack until music/music1.ogg exists.
+-- Vesper: music from music/vesper/vesper.mmp (LMMS), exported with tools/odeum/render_pack.py
 return {
     name = "Vesper",
-    author = "VocusHQ",
+    author = "Locked",
     description = "The evening star: elegant, calm, sung at dusk",
-    volume = 0.6,
+    volume = 1.0, -- SoundFont mixes are quieter than the synth drafts were
     pitch = 1,
     card = "S_A",
     -- title.png is generated from this: python tools/odeum/make_title.py --pack mods/Odeum/packs/vesper
