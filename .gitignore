@@ -11,3 +11,9 @@ Desktop.ini
 # Image editor working files (keep exported PNGs only)
 *.aseprite.bak
 *.psd~
+
+# Odeum packs made from other people's music: local only, never published
+mods/Odeum/packs/takanaka*/
+
+# Python
+__pycache__/
