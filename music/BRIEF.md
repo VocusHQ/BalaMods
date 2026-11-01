@@ -7,6 +7,11 @@ Odeum is Locked's collection of tracks and sounds for Balatro.
 > swing, Vesper v1, Basilicus v1): **none of the three is what was asked for.** Next
 > session starts with talking through what each should be, before any new draft.
 > The style notes below are the starting point for that talk, not a settled spec.
+>
+> **Update (2026-11-01):** every pack is a **version of the original Balatro theme**
+> (see ORIGINAL.md), not a new song. Crescendo: Bolero-style orchestral build of the theme (garage rock rejected), 7/4; build across versions, main = small ensemble, boss = full orchestra. HARD RULE all packs: no high-pitched sounds. Locked's decisions: **rethink all three genres**
+> (the genre notes below are superseded); **keep 150 BPM**; **meter (7/4 or 4/4) decided
+> per pack**. Crescendo is sketched first.
 
 ## Rules for every pack
 - **One song, five versions.** All five share tempo, key, chords and length (the game

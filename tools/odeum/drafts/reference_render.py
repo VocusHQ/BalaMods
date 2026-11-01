@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import numpy as np
+from scipy.signal import butter, sosfiltfilt
 
 sys.path.insert(0, str(Path(__file__).parent))
 import importlib  # noqa: E402
@@ -55,9 +56,15 @@ def main(out):
     tmp.mkdir(exist_ok=True)
     mix = None
     for i, tr in enumerate(rs.TRACKS):
-        gain, *wob = MIX[tr[0]]
+        gain, *wob = getattr(rs, "MIX", MIX)[tr[0]]
         y = wobble(render(tr, tmp), *wob, seed=i) * gain
-        mix = y if mix is None else mix[:len(y)] + y[:len(mix)]
+        cut = getattr(rs, "LOWPASS", {}).get(tr[0])
+        if cut:  # gentle tone filter: softens edgy samples (Locked's no-high-pitch rule)
+            y = sosfiltfilt(butter(2, cut, fs=RATE, output="sos"), y, axis=0)
+        if mix is not None and len(y) != len(mix):  # pad the shorter one, so no track is cut off
+            n = max(len(y), len(mix))
+            y, mix = (np.pad(z, ((0, n - len(z)), (0, 0))) for z in (y, mix))
+        mix = y if mix is None else mix + y
     mix = mix[int(0.4 * RATE):]  # drop the one-beat lead-in
     mix *= 0.7 / np.abs(mix).max()
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "f32le", "-ar", str(RATE), "-ac", "2", "-i", "-",

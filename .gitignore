@@ -26,3 +26,6 @@ music/soundfonts/
 
 # Reference renders and excerpts of the original Balatro music: local only
 music/reference/
+
+# Listening sketches (mp3 renders): local only, re-render from tools/odeum/drafts
+music/*/sketches/
