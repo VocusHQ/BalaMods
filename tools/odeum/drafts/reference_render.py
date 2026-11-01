@@ -2,7 +2,7 @@
 
 Wobble measured from the original (Demucs stems): fast vibrato ~5 Hz, +-10-25 cents, plus a slow
 tape-like drift of about +-25 cents. Applied as a time-varying delay (pitch modulation) per track.
-Usage: python reference_render.py OUT.mp3
+Usage: python reference_render.py OUT.mp3 [module, default reference_sketch]
 """
 import subprocess
 import sys
@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
-import reference_sketch as rs  # noqa: E402
+import importlib  # noqa: E402
 from lmmsgen import build  # noqa: E402
 
 LMMS = "C:/Program Files/LMMS/lmms.exe"
@@ -70,4 +70,5 @@ def main(out):
 
 
 if __name__ == "__main__":
+    rs = importlib.import_module(sys.argv[2] if len(sys.argv) > 2 else "reference_sketch")
     main(sys.argv[1])

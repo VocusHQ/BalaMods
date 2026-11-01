@@ -33,3 +33,30 @@ Piano rolls: regenerate with tools/odeum/analysis/roll.py.
 ## Wobble (measured with pyin on the stems)
 The whole synth layer warbles: fast vibrato ~4.5-7 Hz, lead +-11-27 cents, pad ~+-10 cents, plus slow tape-like drift
 of ~50-60 cents range. Reproduced in tools/odeum/drafts/reference_render.py (time-varying delay per track).
+
+## Full form, bar by bar (from the bass stem; riffs below)
+| Bars | Bass riffs |
+|------|-----------|
+| 1 | none: pad only (Bb3 Db4 F4 Ab4), no drums. Drums enter bar 2 (softer) |
+| 2-4 | Cb, Bb, Eb. Lead dyad C5+F5 enters bar 3 beat 3 and holds into bar 6 |
+| 5-20 | A: F, Db, Bb, Eb x4 (bar 14 = Bb instead of Db) |
+| 21-22 | F, Bb |
+| 23-36 | B: Gb, Gb, Ab, Ab, Gb, Gb, Ab, F, Cb, Gb, Fm-walk, Fm-walk, Cb, Gb |
+| 37-46 | C: Ab, F, then Db-low / F-low alternating (39-46) under an F4 drone |
+| 47-62 | A': Bb, Eb, then F, Db, Bb, Eb x3, ending F, Bb -> loops to bar 1 |
+
+Riffs, as (beat, note, beats) in a 7/4 bar:
+- F:  Eb2 0 1.25, F1 1.5 3, F2 4.5 .5, A2 5 .5, Eb2 5.5 .5, C2 6 .5, F2 6.5 .5
+- Db: Db2 0 3.25, Bb1 3.5 .75, Eb2 5 1, Bb2 6.5 .5
+- Bb: Bb1 0 4.5, Bb2 4.5 .5, Db3 5 .5, Ab2 5.5 .5, Eb2 6 .5, F2 6.5 .5
+- Eb: Eb2 0 1.25, Bb1 1.5 1.75, Eb2 3.5 1, Db3 4.5 .5, C3 5 .5, Bb2 5.5 .5, F2 6 .5, Gb2 6.5 .5
+- Gb: Gb1 0 4.5, Gb2 4.5 .5, Bb2 5 .5, Db2 5.5 .5, Gb2 6 1
+- Ab: Ab1 0 4.5, Ab2 4.5 .5, C3 5 .5, Eb2 5.5 .5, Ab2 6 .5, C2 6.5 .5
+- Cb: B1 0 4.25, Gb2 4.5 .5, B2 5 .5, Eb2 5.25 1, B1 6.25 .75
+- Fm-walk: Ab1 0 1.25, Bb1 1.5 1.75, C2 3.5 .75, Ab2 4.5 .5, C3 5.25 .5, F2 5.5 .5, Ab2 6 .5, C2 6.5 .5
+- C-section Db-low: Db1 0 1, Db1 1.5 1.25, Db1 3.5 1, C3 4.5 .5, Db3 5 .5, Ab2 5.5 .5, Db2 6 .5, Eb2 6.5 .5
+- C-section F-low: F1 0 1.25, C1 1.75 1.25, F1 3.25 2.25, Ab1 6 1
+Riffs often anticipate the next bar's root by a 16th.
+
+Full reference: tools/odeum/drafts/reference_full.py (plays the cleaned transcription). Chroma vs original
+0.88 mean per bar (weakest 0.70-0.79: bars 6, 28, 35, 43, 48; original shows a G natural there, likely drift smear).
