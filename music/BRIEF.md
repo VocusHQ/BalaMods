@@ -12,6 +12,12 @@ Odeum is Locked's collection of tracks and sounds for Balatro.
 > (see ORIGINAL.md), not a new song. Crescendo: Bolero-style orchestral build of the theme (garage rock rejected), 7/4; build across versions, main = small ensemble, boss = full orchestra. HARD RULE all packs: no high-pitched sounds. Locked's decisions: **rethink all three genres**
 > (the genre notes below are superseded); **keep 150 BPM**; **meter (7/4 or 4/4) decided
 > per pack**. Crescendo is sketched first.
+>
+> **Crescendo DONE (2026-11-01):** approved by Locked and exported into the pack. Main =
+> Bolero-style orchestra + live drummer (tools/odeum/drafts/crescendo_garage.py); shop/packs/
+> planet/boss in crescendo_versions.py; export with export_crescendo.py. Next: Vesper and
+> Basilicus, same process (start from the original version for each place, references,
+> short sketches, highs rule).
 
 ## Rules for every pack
 - **One song, five versions.** All five share tempo, key, chords and length (the game
