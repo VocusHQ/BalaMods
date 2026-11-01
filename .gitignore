@@ -23,3 +23,6 @@ music/**/.render*
 
 # SoundFonts: large downloads, fetched locally (see music/README.md)
 music/soundfonts/
+
+# Reference renders and excerpts of the original Balatro music: local only
+music/reference/
