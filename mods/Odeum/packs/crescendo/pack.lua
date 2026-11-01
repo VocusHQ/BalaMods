@@ -1,4 +1,4 @@
--- Crescendo: music from music/crescendo/crescendo.mmp (LMMS), exported with tools/odeum/render_pack.py
+-- Crescendo: Bolero-style orchestra + live drummer, 7/4 at 150 BPM. Exported with tools/odeum/drafts/export_crescendo.py
 return {
     name = "Crescendo",
     author = "Locked",
