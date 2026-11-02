@@ -23,14 +23,15 @@ The theme as a Bolero-style orchestral build with a live garage-band drummer, 7/
 Main builds inside the loop; boss is tense all loop (heartbeat kick, creeping low strings,
 clipped brass). Scripts: `crescendo_garage.py` (main), `crescendo_versions.py` (the rest).
 
-### Vesper: spaghetti-western ride (in progress, 2026-11-02)
+### Vesper: done (2026-11-02)
 Morricone / Red Dead Redemption at dusk, "Ghost Riders" triplet shuffle, 4/4. Twangy low guitar
 riff, walking upright bass, floor-tom gallop, trumpet tune, trombone, low male choir. No whistle,
 no soprano, no whip cracks. Script: `vesper.py`.
-- main: intro, A1 (the ride), A2 (+ trombone, choir), B (campfire: half-time, guitar sings),
-  C (stampede build), A3 (everything)
-- shop: saloon, honky-tonk piano, light beat · packs: darker, busy congas, trombone tune ·
-  planet: no drums, muffled, strings + choir + harmonica · boss: showdown, tense all loop
+- main changes every phrase: the ride, a stop-time break, the "train" (guitar takes the tune),
+  a trombone counter-melody, B (campfire, half-time), C (stampede build), A3 (everything)
+- shop: stride honky-tonk saloon piano, brushes, banjo · packs: habanera bass, hand drums, nylon
+  ripples, muted trumpet · planet: no drums, muffled strings + choir + harmonica ·
+  boss: showdown on a grinding F/Gb pedal, war toms, a line creeping up every phrase
 
 ### Basilicus: not started
 Direction to be agreed with Locked. The pack still holds an old rejected draft.
