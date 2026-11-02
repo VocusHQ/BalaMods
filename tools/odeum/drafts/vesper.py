@@ -143,6 +143,11 @@ def tune(secs, shift=0, vel=96, clip=1.0):
             for s in spans(*secs) for b, key, l in tune_of(s)]
 
 
+def landing(shift, vel, beats=4):
+    """The A tune ends on A3, the leading tone: land on Bb at the top of the loop so the wrap resolves."""
+    return [note(*at(0, 0), k("Bb3") + shift, beats - .1, vel)]
+
+
 def walking_bass(secs, vel=112):
     out = []
     for s in spans(*secs):
@@ -269,10 +274,9 @@ def span_tune(span_list, lines, shift=0, vel=96, clip=1.0):
 
 
 def main_bass():
-    walk = walking_bass(("A1", "A2", "B", "C", "A3"))
+    walk = walking_bass(("intro", "A1", "A2", "B", "C", "A3"))
     hits = [note(*at(s, 3 + 2 * T), k(CH[FORM[s]][0]), .3, v(s, 110)) for s in STOPS]
-    intro = [note(*at(s, 0), k(CH[FORM[s]][0]), 3.5, 90) for s in spans("intro")]
-    return stop_time(walk) + hits + intro
+    return stop_time(walk) + hits
 
 
 def main_drums():
@@ -280,7 +284,7 @@ def main_drums():
     for s in range(BARS):
         name, i = SEC[s]
         if name == "intro":
-            out += shuffle(s, 70, fills=False) if i == 1 else []
+            out += shuffle(s, 78 + 8 * i, fills=False)
         elif name == "B":
             out += halftime(s)
         elif name == "C":
@@ -292,13 +296,13 @@ def main_drums():
         else:
             out += shuffle(s, 100 if name == "A3" else 92, triplets=name == "A3")
     out += stop_time(kicks(where("A1", "A2b", "A3")) + [note(*at(s, 3 + 2 * T), KICK, .3, v(s, 104)) for s in STOPS])
-    out += kicks(where("A2a", "B"), (0, 4)) + kicks([s for s in spans("C") if SEC[s][1] < 2], (0, 4))
+    out += kicks(where("intro", "A2a", "B"), (0, 4)) + kicks([s for s in spans("C") if SEC[s][1] < 2], (0, 4))
     out += kicks([s for s in spans("C") if SEC[s][1] >= 2])
     return out
 
 
 def main_rims():
-    return (rims(where("A1", "A2", "A3")) + rims(spans("B"), (2, 6), 76)
+    return (rims(where("intro", "A1", "A2", "A3")) + rims(spans("B"), (2, 6), 76)
             + rims([s for s in spans("C") if SEC[s][1] < 2], (2, 6)) + rims([s for s in spans("C") if SEC[s][1] >= 2]))
 
 
@@ -306,7 +310,7 @@ def main_timpani():  # A3 downbeats; stop-time hits; a growing triplet roll over
     c_last = spans("C")[-1]
     roll = [note(*at(c_last, 4 + i * T / 2), k("F2"), .2, int(50 + 70 * i / 24)) for i in range(24)]
     hits = [note(*at(s, h), k(CH[FORM[s]][0]) + 12, .5, 96) for s in STOPS for h in STOP_HITS]
-    return timpani(spans("A3")) + timpani(spans("C")[2:5], 84) + roll + hits
+    return timpani(spans("A3")) + timpani(spans("C")[2:5], 84) + roll + hits + timpani(spans("intro")[:1], 84)
 
 
 def main_tracks():
@@ -314,11 +318,11 @@ def main_tracks():
         ("Bass", (ACOUSTIC_BASS, 0), main_bass),
         ("Twang", (CLEAN_GUITAR, 0), lambda: stop_time(twang_riff(("intro", "A1", "C", "A3")))
          + span_tune(where("A2"), A_TUNE, -12, 104) + tune(("B",), 0, 100)),
-        ("Trumpet", (TRUMPET, 0), lambda: tune(("A1", "C", "A3"))),
+        ("Trumpet", (TRUMPET, 0), lambda: tune(("A1", "C", "A3")) + landing(0, 88)),
         ("Trombone", (TROMBONE, 0), lambda: span_tune(where("A2b", "A3"), COUNTER, 0, 88)
          + tune(("C",), -12, 84) + span_tune(where("Bb"), B_TUNE, 0, 70)),
-        ("Nylon", (NYLON_GUITAR, 0), lambda: strums(("A2", "B", "C", "A3"))),
-        ("Choir", (CHOIR_OOHS, 0), lambda: choir(("A2", "B", "C", "A3"))),
+        ("Nylon", (NYLON_GUITAR, 0), lambda: strums(("intro", "A2", "B", "C", "A3"))),
+        ("Choir", (CHOIR_OOHS, 0), lambda: choir(("intro", "A2", "B", "C", "A3"))),
         ("Timpani", (TIMPANI, 0), main_timpani),
         ("Drums", (STANDARD_KIT, 128), main_drums),
         ("Sticks", (STANDARD_KIT, 128), main_rims),
@@ -347,7 +351,7 @@ def shop_tracks():
         ("Bass", (ACOUSTIC_BASS, 0), lambda: [note(*at(s, b), k(CH[FORM[s]][0] if b == 0 else CH[FORM[s]][1]), 3.6, 96)
                                               for s in range(BARS) for b in (0, 4)]),
         ("Piano", (HONKY_PIANO, 0), stride),
-        ("PianoTune", (HONKY_PIANO, 0), lambda: tune(("A1", "A2", "A3"), 0, 92) + tune(("C",), -12, 78)),
+        ("PianoTune", (HONKY_PIANO, 0), lambda: tune(("A1", "A2", "A3"), 0, 92) + tune(("C",), -12, 78) + landing(0, 84)),
         ("Banjo", (BANJO, 0), lambda: tune(("B",), 0, 90, clip=.5)),
         ("Brushes", (BRUSH_KIT, 128), lambda: [note(*at(s, b), SNARE, .3, 76) for s in range(BARS) for b in (2, 6)]
          + [note(*at(s, b), KICK, .4, 78) for s in range(BARS) for b in (0, 4)]),
@@ -393,7 +397,7 @@ def packs_tracks():
          + tune(("C",), -12, 100, clip=.5)),
         ("Vibes", (VIBES, 0), lambda: [note(*at(s, b), k(n) + 12, 3.8, 60) for s in range(BARS) for b in (0, 4)
                                        for n in CH[FORM[s]][5]]),
-        ("Muted", (MUTED_TRUMPET, 0), lambda: tune(("A1", "A2", "A3"), -12, 96) + tune(("B",), 0, 88)),
+        ("Muted", (MUTED_TRUMPET, 0), lambda: tune(("A1", "A2", "A3"), -12, 96) + tune(("B",), 0, 88) + landing(-12, 88)),
         ("Congas", (STANDARD_KIT, 128), conga_pattern),
         ("Drums", (STANDARD_KIT, 128), lambda: [note(*at(s, b), LOW_TOM, .3, 80) for s in range(BARS) for b in (0, 4)]
          + kicks(range(BARS), (0, 4), 92)),
@@ -426,7 +430,7 @@ def planet_tracks():
         ("Strings", (SLOW_STRINGS, 0), lambda: held(every, 4, 0, 70)),
         ("Choir", (CHOIR_OOHS, 0), lambda: choir(every, 70)),
         ("Keys", (EPIANO, 0), keys),
-        ("Harmonica", (HARMONICA, 0), lambda: tune(("A1", "A2", "A3"), -12, 84) + tune(("B",), 0, 78)
+        ("Harmonica", (HARMONICA, 0), lambda: tune(("A1", "A2", "A3"), -12, 84) + tune(("B",), 0, 78) + landing(-12, 78)
          + tune(("C",), -12, 72)),
     ]
 
@@ -501,7 +505,7 @@ def boss_tracks():
         ("Bass", (ACOUSTIC_BASS, 0), boss_bass),
         ("Pedal", (STRINGS, 0), pedal),
         ("Creep", (SLOW_STRINGS, 0), creep),
-        ("Trumpet", (TRUMPET, 0), lambda: tune(("A1", "A2", "A3", "C"), 0, 100, clip=.45)),
+        ("Trumpet", (TRUMPET, 0), lambda: tune(("A1", "A2", "A3", "C"), 0, 100, clip=.45) + landing(0, 96, 1)),
         ("Trombone", (TROMBONE, 0), lambda: tune(("B",), -12, 100, clip=.6) + stabs()),
         ("Choir", (CHOIR_OOHS, 0), lambda: [note(*at(s, 0), k(n), SPAN - .2, wave(s, 76)) for s in range(BARS)
                                             for n in ("F2", "C3", "Db3")]),

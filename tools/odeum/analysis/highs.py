@@ -2,8 +2,8 @@
 total level, so a draft can be compared with the original Balatro track.
 Usage: python highs.py a.mp3 b.ogg ...  [--from S --to S]"""
 import sys, subprocess, numpy as np, scipy.signal as ss
-args=[a for a in sys.argv[1:] if not a.startswith("--")]
 opt=dict(zip(sys.argv[1::1],sys.argv[2::1])); t0=float(opt.get("--from",0)); t1=opt.get("--to")
+args=[a for i,a in enumerate(sys.argv[1:],1) if not a.startswith("--") and not sys.argv[i-1] in ("--from","--to")]
 for f in args:
     raw=subprocess.run(["ffmpeg","-v","error","-i",f,"-f","f32le","-ac","1","-ar","44100","-"],capture_output=True,check=True).stdout
     y=np.frombuffer(raw,np.float32).astype(float); y=y[int(t0*44100):int(float(t1)*44100) if t1 else None]
