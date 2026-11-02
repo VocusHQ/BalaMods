@@ -33,5 +33,9 @@ no soprano, no whip cracks. Script: `vesper.py`.
   ripples, muted trumpet · planet: no drums, muffled strings + choir + harmonica ·
   boss: showdown on a grinding F/Gb pedal, war toms, a line creeping up every phrase
 
-### Basilicus: not started
-Direction to be agreed with Locked. The pack still holds an old rejected draft.
+### Basilicus: medieval tavern / royal court dance (in progress, 2026-11-02)
+Dice games in a king's tavern. Witcher 3 tavern music, Kingdom Come: Deliverance, Age of Empires II.
+Lute (plucked guitar + harp), hurdy-gurdy drone (low accordion), English horn as a crumhorn-like
+reed on the tune, fiddle, bassoon, frame drum, stomps and claps. No brass. Straight eighths (Vesper
+owns the triplet shuffle). Two samples waiting for Locked's pick: `estampie` (4/4) and `dance7`
+(7/4, 2+2+3). Script: `basilicus_samples.py`. The pack still holds an old rejected draft.
