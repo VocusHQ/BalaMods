@@ -1,8 +1,8 @@
--- Vesper: music from music/vesper/vesper.mmp (LMMS), exported with tools/odeum/render_pack.py
+-- Vesper: spaghetti-western ride, 4/4 triplet shuffle at 150 BPM. Exported with tools/odeum/drafts/export_pack.py vesper
 return {
     name = "Vesper",
     author = "Locked",
-    description = "The evening star: elegant, calm, sung at dusk",
+    description = "Riding out at dusk, toward the evening star",
     volume = 1.0, -- SoundFont mixes are quieter than the synth drafts were
     pitch = 1,
     card = "S_A",
