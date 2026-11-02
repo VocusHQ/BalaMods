@@ -1,4 +1,4 @@
--- Crescendo: Bolero-style orchestra + live drummer, 7/4 at 150 BPM. Exported with tools/odeum/drafts/export_crescendo.py
+-- Crescendo: Bolero-style orchestra + live drummer, 7/4 at 150 BPM. Exported with tools/odeum/drafts/export_pack.py crescendo
 return {
     name = "Crescendo",
     author = "Locked",

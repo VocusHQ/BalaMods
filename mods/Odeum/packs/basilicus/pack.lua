@@ -1,4 +1,4 @@
--- Basilicus: music from music/basilicus/basilicus.mmp (LMMS), exported with tools/odeum/render_pack.py
+-- Basilicus: placeholder draft music (to be redone like Crescendo and Vesper)
 return {
     name = "Basilicus",
     author = "Locked",

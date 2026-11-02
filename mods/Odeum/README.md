@@ -17,7 +17,7 @@ Add a folder to `packs/`. The folder name is the pack's id.
 
 ```
 packs/<id>/
-  pack.lua          -- name and options (see packs/testum/pack.lua)
+  pack.lua          -- name and options (see packs/crescendo/pack.lua)
   title.png         -- optional title logo, 666x432 (drawn at 333x216)
   music/
     music1.ogg      -- main theme (required)

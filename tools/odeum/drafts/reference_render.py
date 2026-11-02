@@ -1,8 +1,8 @@
-"""Renders reference_sketch.py track by track, adds Balatro-style pitch wobble, and mixes to an mp3.
+"""Renders a draft module (TRACKS, MIX, LOWPASS) track by track, adds Balatro-style pitch wobble, and mixes to an mp3.
 
 Wobble measured from the original (Demucs stems): fast vibrato ~5 Hz, +-10-25 cents, plus a slow
 tape-like drift of about +-25 cents. Applied as a time-varying delay (pitch modulation) per track.
-Usage: python reference_render.py OUT.mp3 [module, default reference_sketch]
+Usage: python reference_render.py OUT.mp3 MODULE   (e.g. vesper, crescendo_garage, reference_full)
 """
 import subprocess
 import sys
@@ -77,5 +77,5 @@ def main(out):
 
 
 if __name__ == "__main__":
-    rs = importlib.import_module(sys.argv[2] if len(sys.argv) > 2 else "reference_sketch")
+    rs = importlib.import_module(sys.argv[2])
     main(sys.argv[1])

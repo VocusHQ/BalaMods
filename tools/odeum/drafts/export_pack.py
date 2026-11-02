@@ -1,12 +1,13 @@
-"""Exports the five Crescendo versions into the Odeum pack (mods/Odeum/packs/crescendo/music/music1-5.ogg).
+"""Exports a pack's five versions into Odeum (mods/Odeum/packs/<pack>/music/music1-5.ogg).
 
 Same per-track rendering as reference_render.py (LMMS, wobble, per-track gain and lowpass), then:
-  - every version is cut to exactly the loop length (BARS x 7 beats at 150 BPM), so all five stay in sync
+  - every version is cut to exactly the loop length (BARS x BEATS_PER_BAR beats), so all five stay in sync
   - whatever rings past the loop end is folded back onto the start, so the loop has no click or gap
   - each version is matched to the loudness of its Balatro counterpart (music1-5.ogg), so the
     game's crossfades between places stay level, like the original's; a short look-ahead limiter
     catches the few hits (the A3 landing) that would peak above PEAK
-Usage: python export_crescendo.py [--only main,boss] [--out DIR]
+Usage: python export_pack.py PACK [--only main,boss] [--out DIR]   (PACK: crescendo, vesper)
+Set BALATRO_MUSIC to a folder with the game's own music1-5.ogg for the loudness match.
 """
 import argparse
 import importlib
@@ -23,12 +24,15 @@ sys.path.insert(0, str(Path(__file__).parent))
 import reference_render as rr  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
-PACK = ROOT / "mods" / "Odeum" / "packs" / "crescendo" / "music"
 RATE = rr.RATE
 PEAK = 0.89  # -1 dBFS before vorbis encoding
-# slot: (module, VERSION env)
-VERSIONS = {1: ("crescendo_garage", None), 2: ("crescendo_versions", "packs"), 3: ("crescendo_versions", "planet"),
-            4: ("crescendo_versions", "shop"), 5: ("crescendo_versions", "boss")}
+# pack: {slot: (module, VERSION env)}
+PACKS = {
+    "crescendo": {1: ("crescendo_garage", None), 2: ("crescendo_versions", "packs"), 3: ("crescendo_versions", "planet"),
+                  4: ("crescendo_versions", "shop"), 5: ("crescendo_versions", "boss")},
+    "vesper": {1: ("vesper", "main"), 2: ("vesper", "packs"), 3: ("vesper", "planet"), 4: ("vesper", "shop"),
+               5: ("vesper", "boss")},
+}
 NAMES = {1: "main", 2: "packs", 3: "planet", 4: "shop", 5: "boss"}
 
 
@@ -85,18 +89,19 @@ def decode(path):
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("pack", choices=sorted(PACKS))
     ap.add_argument("--only", default="")
-    ap.add_argument("--out", default=str(PACK))
+    ap.add_argument("--out", default="")
     ap.add_argument("--reference", default=os.environ.get("BALATRO_MUSIC", ""),
                     help="folder with the game's music1-5.ogg (local only, never in the repo)")
     a = ap.parse_args()
     slots = [s for s, n in NAMES.items() if not a.only or n in a.only.split(",")]
-    out_dir = Path(a.out)
+    out_dir = Path(a.out or ROOT / "mods" / "Odeum" / "packs" / a.pack / "music")
     tmp = out_dir / ".export_tmp"
     tmp.mkdir(parents=True, exist_ok=True)
     mixes = {}
     for s in slots:
-        module, version = VERSIONS[s]
+        module, version = PACKS[a.pack][s]
         print(f"rendering {NAMES[s]} ...", flush=True)
         mixes[s] = mixdown(load(module, version), tmp)
     for f in tmp.iterdir():

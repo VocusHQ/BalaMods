@@ -80,15 +80,3 @@ def build(tracks, bpm, bars, vols=None):
     ET.SubElement(song, "controllers")
     return ET.ElementTree(proj)
 
-
-def main(tracks, bpm, bars):
-    """CLI: script.py OUT.mmp [VOLS.json]"""
-    out = Path(sys.argv[1])
-    vols = json.loads(Path(sys.argv[2]).read_text()) if len(sys.argv) > 2 else {}
-    out.parent.mkdir(parents=True, exist_ok=True)
-    tree = build(tracks, bpm, bars, vols)
-    ET.indent(tree)
-    with open(out, "wb") as f:
-        f.write(b'<?xml version="1.0"?>\n<!DOCTYPE lmms-project>\n')
-        tree.write(f, encoding="utf-8")
-    print(out)
