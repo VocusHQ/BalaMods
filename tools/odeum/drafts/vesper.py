@@ -38,7 +38,8 @@ BPM, LEAD_IN, SPAN = 150, 1, 8
 BEATS_PER_BAR = SPAN  # reference_render / export work in chord spans
 T = 1 / 3
 
-CLEAN_GUITAR, CHOIR_OOHS, HARMONICA, HONKY_PIANO, CONTRABASS, TIMPANI = 27, 53, 22, 3, 43, 47
+CLEAN_GUITAR, CHOIR_OOHS, HARMONICA, HONKY_PIANO, CONTRABASS, TIMPANI = 27, 53, 22, 0, 43, 47  # soft piano, not honky-tonk
+HORN = 60  # French horn: warm, carries the tune instead of the nasal trumpet
 LOW_FLOOR_TOM, HIGH_FLOOR_TOM, LOW_TOM = 41, 43, 45
 
 SECTIONS = [("intro", ["Bb", "Eb"]),
@@ -332,8 +333,8 @@ def main_tracks():
     return [
         ("Bass", (ACOUSTIC_BASS, 0), main_bass),
         ("Twang", (CLEAN_GUITAR, 0), lambda: stop_time(after_landing(twang_riff(("intro", "A1", "C", "A3"))))
-         + span_tune(where("A2"), A_TUNE, -12, 104) + tune(("B",), 0, 100)),
-        ("Trumpet", (TRUMPET, 0), lambda: tune(("A1", "C", "A3")) + landing(0, 100)),
+         + span_tune(where("A2a"), A_TUNE, -12, 104) + tune(("B",), 0, 100)),
+        ("Trumpet", (HORN, 0), lambda: tune(("A1", "C", "A3")) + landing(0, 100)),
         ("Trombone", (TROMBONE, 0), lambda: span_tune(where("A2b", "A3"), COUNTER, 0, 88) + landing(-12, 92)
          + tune(("C",), -12, 84) + span_tune(where("Bb"), B_TUNE, 0, 70)),
         ("Nylon", (NYLON_GUITAR, 0), lambda: after_landing(strums(("intro", "A2", "B", "C", "A3")))
@@ -413,7 +414,7 @@ def packs_tracks():
          + tune(("C",), -12, 100, clip=.5)),
         ("Vibes", (VIBES, 0), lambda: [note(*at(s, b), k(n) + 12, 3.8, 60) for s in range(BARS) for b in (0, 4)
                                        for n in CH[FORM[s]][5]]),
-        ("Muted", (MUTED_TRUMPET, 0), lambda: tune(("A1", "A2", "A3"), -12, 96) + tune(("B",), 0, 88) + landing(-12, 88)),
+        ("Muted", (HORN, 0), lambda: tune(("A1", "A2", "A3"), 0, 92) + tune(("B",), 0, 88) + landing(-12, 88)),
         ("Congas", (STANDARD_KIT, 128), conga_pattern),
         ("Drums", (STANDARD_KIT, 128), lambda: [note(*at(s, b), LOW_TOM, .3, 80) for s in range(BARS) for b in (0, 4)]
          + kicks(range(BARS), (0, 4), 92)),
@@ -474,9 +475,7 @@ def war_toms():
     for s in range(BARS):
         last = last_in_phrase(s)
         for b in range(6 if last else SPAN):
-            out += [note(*at(s, b), LOW_FLOOR_TOM, .25, wave(s, 108 if b % 2 == 0 else 92)),
-                    note(*at(s, b + T), HIGH_FLOOR_TOM, .25, wave(s, 60)),
-                    note(*at(s, b + 2 * T), HIGH_FLOOR_TOM, .25, wave(s, 72))]
+            out += [note(*at(s, b), LOW_FLOOR_TOM, .25, wave(s, 104 if b % 2 == 0 else 84))]  # on the beat only
         if last:
             out += fill(s, 112)
     return out
@@ -521,13 +520,12 @@ def boss_tracks():
         ("Bass", (ACOUSTIC_BASS, 0), boss_bass),
         ("Pedal", (STRINGS, 0), pedal),
         ("Creep", (SLOW_STRINGS, 0), creep),
-        ("Trumpet", (TRUMPET, 0), lambda: tune(("A1", "A2", "A3", "C"), 0, 100, clip=.45) + landing(0, 96, 1)),
+        ("Trumpet", (HORN, 0), lambda: tune(("A1", "A2", "A3", "C"), 0, 100, clip=.45) + landing(0, 96, 1)),
         ("Trombone", (TROMBONE, 0), lambda: tune(("B",), -12, 100, clip=.6) + stabs()),
         ("Choir", (CHOIR_OOHS, 0), lambda: [note(*at(s, 0), k(n), SPAN - .2, wave(s, 76)) for s in range(BARS)
                                             for n in ("F2", "C3", "Db3")]),
         ("Timpani", (TIMPANI, 0), boss_timpani),
         ("Drums", (STANDARD_KIT, 128), lambda: heartbeat() + war_toms()),
-        ("Sticks", (STANDARD_KIT, 128), clock),
     ]
 
 
@@ -535,20 +533,20 @@ TRACKS = {"main": main_tracks, "shop": shop_tracks, "packs": packs_tracks, "plan
           "boss": boss_tracks}[VERSION]()
 
 # gain, wobble (fast cents, Hz, slow cents, Hz): Balatro-style tremolo-arm wobble on the twang guitar
-MIX = {"Bass": (1.6, 0, 0, 0, 0), "Twang": (0.9, 10, 5.5, 6, 0.4), "Trumpet": (0.75, 0, 0, 0, 0),
-       "Trombone": (0.6, 0, 0, 0, 0), "Choir": (0.55, 0, 0, 6, 0.3), "Drums": (0.8, 0, 0, 0, 0),
-       "Sticks": (0.45, 0, 0, 0, 0), "Nylon": (0.7, 0, 0, 0, 0), "Timpani": (0.9, 0, 0, 0, 0),
+MIX = {"Bass": (1.2, 0, 0, 0, 0), "Twang": (0.65, 6, 5.5, 4, 0.4), "Trumpet": (0.75, 0, 0, 0, 0),
+       "Trombone": (0.6, 0, 0, 0, 0), "Choir": (0.55, 0, 0, 6, 0.3), "Drums": (0.6, 0, 0, 0, 0),
+       "Sticks": (0.3, 0, 0, 0, 0), "Nylon": (0.7, 0, 0, 0, 0), "Timpani": (0.9, 0, 0, 0, 0),
        "Piano": (0.5, 0, 0, 8, 0.35), "Congas": (0.6, 0, 0, 0, 0), "Strings": (0.8, 0, 0, 8, 0.3),
        "Keys": (0.5, 6, 4.5, 10, 0.3), "Harmonica": (0.6, 8, 5, 0, 0), "Pedal": (0.6, 0, 0, 0, 0),
        "Creep": (0.9, 0, 0, 0, 0), "PianoTune": (0.6, 0, 0, 8, 0.35), "Banjo": (0.6, 0, 0, 0, 0),
        "Brushes": (0.7, 0, 0, 0, 0), "Drone": (0.7, 0, 0, 0, 0), "Vibes": (0.5, 6, 4.5, 0, 0),
        "Muted": (0.8, 0, 0, 0, 0)}
-LOWPASS = {"Trumpet": 2000, "Trombone": 2000, "Twang": 1900, "Nylon": 3000, "Drums": 1600, "Sticks": 2500,
-           "Choir": 2500, "Harmonica": 1800, "Piano": 2400, "Congas": 1500, "Timpani": 2000, "Pedal": 1500,
-           "PianoTune": 2200, "Banjo": 1800, "Brushes": 2500, "Vibes": 1800, "Muted": 1700, "Creep": 1800}
+LOWPASS = {"Trumpet": 1800, "Trombone": 1800, "Twang": 1500, "Nylon": 3000, "Drums": 1600, "Sticks": 2500,
+           "Choir": 2500, "Harmonica": 1800, "Piano": 1800, "Congas": 1500, "Timpani": 2000, "Pedal": 1500,
+           "PianoTune": 1800, "Banjo": 1800, "Brushes": 2500, "Vibes": 1800, "Muted": 1700, "Creep": 1800}
 if VERSION == "planet":  # heavily muffled, like Balatro's planet version
     LOWPASS = {name: 1400 for name in MIX}
 if VERSION == "packs":  # darker than main
     LOWPASS = {name: min(cut, 1800) for name, cut in LOWPASS.items()}
 if VERSION == "boss":
-    MIX["Bass"] = (2.0, 0, 0, 0, 0)  # bass grows, like Balatro's boss version
+    MIX["Bass"] = (1.5, 0, 0, 0, 0)  # bass grows, like Balatro's boss version

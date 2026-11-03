@@ -39,7 +39,7 @@ BPM, LEAD_IN, SPAN = 150, 1, 8
 BEATS_PER_BAR = SPAN  # reference_render / export work in chord spans
 
 DULCIMER, ACCORDION, VIOLA, CELLO, PIZZ, CONTRABASS, TIMPANI = 15, 21, 41, 42, 45, 43, 47
-CHOIR_AAHS, ENGLISH_HORN, BASSOON_P, RECORDER, FIDDLE = 52, 69, 70, 74, 110
+CHOIR_AAHS, ENGLISH_HORN, BASSOON_P, RECORDER, FIDDLE = 52, 74, 70, 74, 41  # soft recorder tune, viola for the fiddle part (GM reed + fiddle were nasal)
 LOW_FLOOR_TOM, HIGH_FLOOR_TOM, LOW_TOM = 41, 43, 45
 
 SECTIONS = [("intro", ["Bb", "Eb"]),
@@ -226,6 +226,11 @@ def bassoon(span_list, vel=90):  # root on the DUM, octave below on the DUM-DUM
             for s in span_list for b in (0, 2, 4, 6)]
 
 
+def plucked_bass(span_list, beats=(0, 2.5, 4, 6.5), vel=104):  # the low end: root, fifth on the DUM-DUM
+    return [note(*at(s, b), k(CH[FORM[s]][0 if b in (0, 4) else 1]) - (12 if CH[FORM[s]][0][-1] != "1" else 0), 1.2, v(s, vel))
+            for s in span_list for b in beats]
+
+
 def fill(s, vel):  # frame drum: DUM-DUM-DUM-DUM-ta-ta-ta-ta over the last two beats of a phrase
     hits = [(6, LOW_FLOOR_TOM), (6.5, LOW_FLOOR_TOM), (7, HIGH_FLOOR_TOM), (7.25, HIGH_FLOOR_TOM),
             (7.5, LOW_TOM), (7.75, LOW_TOM)]
@@ -310,11 +315,12 @@ def main_tracks():
     return [
         ("Bassoon", (BASSOON_P, 0), lambda: after_landing(bassoon(spans(*every))) + [note(*at(0, 0), k("Bb1"), 3.9, 110)]),
         ("Drone", (ACCORDION, 0), lambda: drone(spans(*every))),
+        ("Bass", (ACOUSTIC_BASS, 0), lambda: after_landing(plucked_bass(spans(*every))) + [note(*at(0, 0), k("Bb1"), 3.9, 108)]),
         ("Lute", (NYLON_GUITAR, 0), lambda: after_landing(lute(spans("intro", "A1", "A2b", "C", "A3")))
          + strum([0], (0,), 100, 3.5) + span_tune(where("A2a"), A_TUNE, 0, 104) + strum(spans("B"))),
         ("Harp", (HARP, 0), lambda: harp_chords(where("A1a", "A2", "A3")) + harp_ripple(spans("B"))
          + [note(*at(0, 0), k(n), 3.5, 84) for n in CH["Bb"][2]]),
-        ("Reed", (ENGLISH_HORN, 0), lambda: tune(("A3", "B", "C")) + span_tune(where("A1a", "A2b"), A_TUNE)
+        ("Reed", (ENGLISH_HORN, 0), lambda: tune(("A3", "B", "C")) + span_tune(where("A1a"), A_TUNE)
          + landing(0, 100)),
         ("Fiddle", (FIDDLE, 0), lambda: span_tune(where("A1b"), A_TUNE, 0, 96) + tune(("A3",), 0, 80)
          + span_tune(where("Bb"), B_TUNE, 0, 74) + tune(("C",), -12, 78) + landing(-12, 84)),
@@ -351,6 +357,7 @@ def shop_tracks():
     return [
         ("Bassoon", (BASSOON_P, 0), shop_bassoon),
         ("Accordion", (ACCORDION, 0), musette),
+        ("Bass", (ACOUSTIC_BASS, 0), lambda: plucked_bass(range(BARS), (0, 1.5, 4, 5.5), 96)),
         ("Dulcimer", (DULCIMER, 0), lambda: tune(("A1", "A2", "A3"), 0, 92) + tune(("C",), -12, 80) + landing(0, 88)),
         ("Harp", (HARP, 0), lambda: tune(("B",), 0, 92, clip=.5)),
         ("Drums", (STANDARD_KIT, 128), lambda: [note(*at(s, b), LOW_FLOOR_TOM, .3, 84) for s in range(BARS) for b in (2, 6)]
@@ -382,6 +389,8 @@ def packs_tracks():
     return [
         ("Bassoon", (BASSOON_P, 0), lambda: [note(*at(s, b), k(CH[FORM[s]][0]), 1.8, 92) for s in range(BARS) for b in (0, 2.5, 4, 6.5)]),
         ("Drone", (CELLO, 0), lambda: [note(*at(s, 0), k(CH[FORM[s]][0]) + 12, SPAN - .2, 66) for s in range(BARS)]),
+        ("Bass", (CONTRABASS, 0), lambda: [note(*at(s, b), k(CH[FORM[s]][0]) - (12 if CH[FORM[s]][0][-1] != "1" else 0), 3.8, 100)
+                                           for s in range(BARS) for b in (0, 4)]),
         ("Pizz", (PIZZ, 0), lambda: pizz_ripple(spans("intro", "A1", "A2", "B", "A3")) + tune(("C",), -12, 100, clip=.5)),
         ("Viola", (VIOLA, 0), lambda: tune(("A1", "A2", "A3", "B"), -12, 98) + landing(-12, 90)),
         ("Hands", (STANDARD_KIT, 128), hand_drums),
@@ -466,6 +475,7 @@ def boss_tracks():
     not_c = [s for s in range(BARS) if sec(s) != "C"]
     return [
         ("Bassoon", (BASSOON_P, 0), boss_bassoon),
+        ("Bass", (ACOUSTIC_BASS, 0), lambda: [note(*at(s, b), k("F1"), 1.5, wave(s, 110)) for s in range(BARS) for b in (0, 3, 6)]),
         ("Drone", (ACCORDION, 0), lambda: [note(*at(s, 0), k(n), SPAN - .1, 72) for s in range(BARS) for n in ("F2", "Gb2", "C3")]),
         ("Cello", (CELLO, 0), lambda: [note(*at(s, 0), k("F3") + SEC[s][1] % 4, SPAN - .2, wave(s, 90)) for s in not_c]),
         ("Choir", (CHOIR_AAHS, 0), lambda: [note(*at(s, 0), k(n), SPAN - .2, wave(s, 74)) for s in not_c
@@ -483,18 +493,18 @@ TRACKS = {"main": main_tracks, "shop": shop_tracks, "packs": packs_tracks, "plan
           "boss": boss_tracks}[VERSION]()
 
 # gain, wobble (fast cents, Hz, slow cents, Hz)
-MIX = {"Bassoon": (0.75, 0, 0, 0, 0), "Drone": (0.35, 6, 5, 4, 0.3), "Lute": (0.9, 0, 0, 0, 0), "Harp": (0.5, 0, 0, 0, 0),
-       "Reed": (0.7, 0, 0, 0, 0), "Fiddle": (0.55, 10, 5.5, 0, 0), "Cello": (0.6, 8, 5, 0, 0), "Nakers": (0.8, 0, 0, 0, 0),
-       "Drums": (0.8, 0, 0, 0, 0), "Claps": (0.4, 0, 0, 0, 0), "Accordion": (0.45, 6, 5, 4, 0.3),
+MIX = {"Bassoon": (0.55, 0, 0, 0, 0), "Drone": (0.22, 4, 5, 4, 0.3), "Lute": (0.75, 0, 0, 0, 0), "Harp": (0.5, 0, 0, 0, 0),
+       "Reed": (0.65, 0, 0, 0, 0), "Fiddle": (0.5, 0, 0, 0, 0), "Cello": (0.6, 0, 0, 0, 0), "Nakers": (0.8, 0, 0, 0, 0),
+       "Drums": (0.65, 0, 0, 0, 0), "Claps": (0.22, 0, 0, 0, 0), "Accordion": (0.3, 4, 5, 4, 0.3),
        "Dulcimer": (0.6, 0, 0, 0, 0), "Ticks": (0.35, 0, 0, 0, 0), "Pizz": (0.7, 0, 0, 0, 0), "Viola": (0.7, 8, 5, 0, 0),
-       "Hands": (0.6, 0, 0, 0, 0), "Bass": (1.4, 0, 0, 0, 0), "Strings": (0.8, 0, 0, 8, 0.3), "Choir": (0.55, 0, 0, 6, 0.3),
+       "Hands": (0.55, 0, 0, 0, 0), "Bass": (1.1, 0, 0, 0, 0), "Strings": (0.8, 0, 0, 8, 0.3), "Choir": (0.55, 0, 0, 6, 0.3),
        "Recorder": (0.6, 6, 5, 0, 0)}
-LOWPASS = {"Lute": 3000, "Harp": 3000, "Drone": 1600, "Reed": 2000, "Fiddle": 1800, "Cello": 2000, "Drums": 1800,
-           "Claps": 1500, "Nakers": 2000, "Accordion": 1800, "Dulcimer": 2000, "Ticks": 2000, "Pizz": 2400,
+LOWPASS = {"Lute": 2400, "Harp": 2400, "Drone": 1200, "Reed": 1600, "Fiddle": 1500, "Cello": 1600, "Drums": 1500,
+           "Claps": 1200, "Nakers": 2000, "Accordion": 1400, "Dulcimer": 1600, "Ticks": 2000, "Pizz": 2400,
            "Viola": 1800, "Hands": 1500, "Choir": 2200, "Recorder": 1600}
 if VERSION == "planet":  # heavily muffled, like Balatro's planet version
     LOWPASS = {name: 1200 for name in MIX}
 if VERSION == "packs":  # darker than main
     LOWPASS = {name: min(LOWPASS.get(name, 1800), 1800) for name in MIX}
 if VERSION == "boss":
-    MIX["Bassoon"] = (1.0, 0, 0, 0, 0)  # bass grows, like Balatro's boss version
+    MIX["Bass"] = (1.4, 0, 0, 0, 0)  # bass grows, like Balatro's boss version
