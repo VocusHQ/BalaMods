@@ -6,7 +6,7 @@ Same per-track rendering as reference_render.py (LMMS, wobble, per-track gain an
   - each version is matched to the loudness of its Balatro counterpart (music1-5.ogg), so the
     game's crossfades between places stay level, like the original's; a short look-ahead limiter
     catches the few hits (the A3 landing) that would peak above PEAK
-Usage: python export_pack.py PACK [--only main,boss] [--out DIR]   (PACK: crescendo, vesper)
+Usage: python export_pack.py PACK [--only main,boss] [--out DIR]   (PACK: crescendo, vesper, basilicus)
 Set BALATRO_MUSIC to a folder with the game's own music1-5.ogg for the loudness match.
 """
 import argparse
@@ -32,6 +32,8 @@ PACKS = {
                   4: ("crescendo_versions", "shop"), 5: ("crescendo_versions", "boss")},
     "vesper": {1: ("vesper", "main"), 2: ("vesper", "packs"), 3: ("vesper", "planet"), 4: ("vesper", "shop"),
                5: ("vesper", "boss")},
+    "basilicus": {1: ("basilicus", "main"), 2: ("basilicus", "packs"), 3: ("basilicus", "planet"),
+                  4: ("basilicus", "shop"), 5: ("basilicus", "boss")},
 }
 NAMES = {1: "main", 2: "packs", 3: "planet", 4: "shop", 5: "boss"}
 

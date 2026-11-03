@@ -13,7 +13,8 @@ module into an mp3 for listening, and `export_pack.py` writes the five game vers
 | `crescendo_garage.py` | **Crescendo** main (blinds): Bolero-style orchestra + live drummer, 7/4 |
 | `crescendo_versions.py` | **Crescendo** shop, packs, planet and boss (`VERSION=`) |
 | `crescendo_main*.py`, `crescendo_bolero.py`, `crescendo_samples.py` | earlier Crescendo steps; the two files above import their form, tunes and voicings |
-| `basilicus_samples.py` | **Basilicus** samples (in progress): medieval tavern band, `SAMPLE=estampie\|dance7` |
+| `basilicus.py` | **Basilicus**: medieval estampie, 4/4 straight eighths, all five versions (`VERSION=main\|shop\|packs\|planet\|boss`) |
+| `basilicus_samples.py` | the two Basilicus samples Locked chose from, `SAMPLE=estampie\|dance7` |
 | `vesper.py` | **Vesper**: spaghetti-western ride, 4/4 triplet shuffle, all five versions (`VERSION=main\|shop\|packs\|planet\|boss`) |
 
 ```

@@ -23,7 +23,7 @@ The theme as a Bolero-style orchestral build with a live garage-band drummer, 7/
 Main builds inside the loop; boss is tense all loop (heartbeat kick, creeping low strings,
 clipped brass). Scripts: `crescendo_garage.py` (main), `crescendo_versions.py` (the rest).
 
-### Vesper: done (2026-11-02)
+### Vesper: done (2026-11-02; loop landing like Crescendo's added 2026-11-03)
 Morricone / Red Dead Redemption at dusk, "Ghost Riders" triplet shuffle, 4/4. Twangy low guitar
 riff, walking upright bass, floor-tom gallop, trumpet tune, trombone, low male choir. No whistle,
 no soprano, no whip cracks. Script: `vesper.py`.
@@ -33,9 +33,15 @@ no soprano, no whip cracks. Script: `vesper.py`.
   ripples, muted trumpet · planet: no drums, muffled strings + choir + harmonica ·
   boss: showdown on a grinding F/Gb pedal, war toms, a line creeping up every phrase
 
-### Basilicus: medieval tavern / royal court dance (in progress, 2026-11-02)
+### Basilicus: medieval estampie (first full version, 2026-11-03, waiting for Locked's in-game test)
 Dice games in a king's tavern. Witcher 3 tavern music, Kingdom Come: Deliverance, Age of Empires II.
 Lute (plucked guitar + harp), hurdy-gurdy drone (low accordion), English horn as a crumhorn-like
-reed on the tune, fiddle, bassoon, frame drum, stomps and claps. No brass. Straight eighths (Vesper
-owns the triplet shuffle). Two samples waiting for Locked's pick: `estampie` (4/4) and `dance7`
-(7/4, 2+2+3). Script: `basilicus_samples.py`. The pack still holds an old rejected draft.
+reed on the tune, fiddle, bassoon, cello, frame drum "DUM tek-tek DUM-DUM tek", stomps, claps,
+nakers (timpani). No brass. Straight eighths (Vesper owns the triplet shuffle). Locked picked the
+4/4 estampie sample over the 7/4 one. Script: `basilicus.py` (samples: `basilicus_samples.py`).
+- main changes every phrase: the dance, a stomp-and-clap break (fiddle tune), the lute takes the
+  tune, reed + cello counter-melody, B (the court, half-time, harp ripples), C (the dance whips up),
+  A3 (everything). The loop lands on Bb and rings, then a frame-drum roll leads back into A1
+- shop: tavern table, 3+3+2 lilt on accordion musette + bassoon, dulcimer tune, backbeat on 3 only ·
+  packs: busy hand drums, pizzicato, viola tune · planet: no drums, muffled choir + strings + harp,
+  recorder · boss: limping 3+3+2 procession, F/Gb drone grind, bassoon ostinato, monk chant
