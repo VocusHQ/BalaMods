@@ -5,7 +5,7 @@ Kept from Balatro: the chord loop and form idea (A / B / C / A), the lead anchor
 bass, riff and tunes. One "span" = one chord = two 4/4 bars (8 beats, 3.2 s).
 
 Form (40 spans, 128 s), shared by every version so the game can crossfade them in sync:
-  intro (2)  twang riff alone, the gallop comes in
+  intro (2)  main: the band lands on Bb and rings, the gallop creeps back, tom fill into A1
   A1 (8)     the ride: shuffle on floor toms, twang riff, bass walking root-fifth, trumpet tune
   A2 (8)     + trombone an octave under, low choir, nylon guitar on 2 and 4
   B  (8)     campfire: half-time beat, twang guitar sings a new tune over Balatro's B chords,
@@ -273,18 +273,30 @@ def span_tune(span_list, lines, shift=0, vel=96, clip=1.0):
             for s in span_list for b, key, l in lines[SEC[s][1]]]
 
 
+# The loop wrap works like Crescendo's: A3 ends, the whole band lands on Bb at the top of the loop
+# and lets it ring (a real ending, not a dead stop), the gallop creeps back in over the second half,
+# the second intro span builds and plays a tom fill into A1, and A1 opens with an accent.
+def after_landing(notes, beat=4):
+    """Drop everything in the first intro span before `beat`, so the landing chord rings alone."""
+    return [n for n in notes if not (beat_of(n)[0] == 0 and beat_of(n)[1] < beat - .01)]
+
+
 def main_bass():
-    walk = walking_bass(("intro", "A1", "A2", "B", "C", "A3"))
+    walk = after_landing(walking_bass(("intro", "A1", "A2", "B", "C", "A3")))
     hits = [note(*at(s, 3 + 2 * T), k(CH[FORM[s]][0]), .3, v(s, 110)) for s in STOPS]
-    return stop_time(walk) + hits
+    land = [note(*at(0, 0), k("Bb1"), 3.9, 116)]
+    return stop_time(walk) + hits + land
 
 
 def main_drums():
     out = []
     for s in range(BARS):
         name, i = SEC[s]
-        if name == "intro":
-            out += shuffle(s, 78 + 8 * i, fills=False)
+        if name == "intro" and i == 0:  # landing hit, then the gallop creeps back in
+            out.append(note(*at(s, 0), LOW_FLOOR_TOM, .3, 112))
+            out += after_landing(shuffle(s, 72, fills=False))
+        elif name == "intro":  # building, tom fill into A1 (the count-in)
+            out += [n for n in shuffle(s, 88, fills=False) if beat_of(n)[1] < 6 - .01] + fill(s, 112)
         elif name == "B":
             out += halftime(s)
         elif name == "C":
@@ -296,13 +308,15 @@ def main_drums():
         else:
             out += shuffle(s, 100 if name == "A3" else 92, triplets=name == "A3")
     out += stop_time(kicks(where("A1", "A2b", "A3")) + [note(*at(s, 3 + 2 * T), KICK, .3, v(s, 104)) for s in STOPS])
-    out += kicks(where("intro", "A2a", "B"), (0, 4)) + kicks([s for s in spans("C") if SEC[s][1] < 2], (0, 4))
+    out += [note(*at(0, 0), KICK, .5, 118), note(*at(0, 4), KICK, .5, 70), note(*at(1, 0), KICK, .5, 90),
+            note(*at(1, 4), KICK, .5, 96)]
+    out += kicks(where("A2a", "B"), (0, 4)) + kicks([s for s in spans("C") if SEC[s][1] < 2], (0, 4))
     out += kicks([s for s in spans("C") if SEC[s][1] >= 2])
     return out
 
 
 def main_rims():
-    return (rims(where("intro", "A1", "A2", "A3")) + rims(spans("B"), (2, 6), 76)
+    return (after_landing(rims(where("intro", "A1", "A2", "A3"))) + rims(spans("B"), (2, 6), 76)
             + rims([s for s in spans("C") if SEC[s][1] < 2], (2, 6)) + rims([s for s in spans("C") if SEC[s][1] >= 2]))
 
 
@@ -310,18 +324,20 @@ def main_timpani():  # A3 downbeats; stop-time hits; a growing triplet roll over
     c_last = spans("C")[-1]
     roll = [note(*at(c_last, 4 + i * T / 2), k("F2"), .2, int(50 + 70 * i / 24)) for i in range(24)]
     hits = [note(*at(s, h), k(CH[FORM[s]][0]) + 12, .5, 96) for s in STOPS for h in STOP_HITS]
-    return timpani(spans("A3")) + timpani(spans("C")[2:5], 84) + roll + hits + timpani(spans("intro")[:1], 84)
+    land = [note(*at(0, 0), k("Bb2"), 3, 112), note(*at(spans("A1")[0], 0), k("F2"), 2, 104)]
+    return timpani(spans("A3")) + timpani(spans("C")[2:5], 84) + roll + hits + land
 
 
 def main_tracks():
     return [
         ("Bass", (ACOUSTIC_BASS, 0), main_bass),
-        ("Twang", (CLEAN_GUITAR, 0), lambda: stop_time(twang_riff(("intro", "A1", "C", "A3")))
+        ("Twang", (CLEAN_GUITAR, 0), lambda: stop_time(after_landing(twang_riff(("intro", "A1", "C", "A3"))))
          + span_tune(where("A2"), A_TUNE, -12, 104) + tune(("B",), 0, 100)),
-        ("Trumpet", (TRUMPET, 0), lambda: tune(("A1", "C", "A3")) + landing(0, 88)),
-        ("Trombone", (TROMBONE, 0), lambda: span_tune(where("A2b", "A3"), COUNTER, 0, 88)
+        ("Trumpet", (TRUMPET, 0), lambda: tune(("A1", "C", "A3")) + landing(0, 100)),
+        ("Trombone", (TROMBONE, 0), lambda: span_tune(where("A2b", "A3"), COUNTER, 0, 88) + landing(-12, 92)
          + tune(("C",), -12, 84) + span_tune(where("Bb"), B_TUNE, 0, 70)),
-        ("Nylon", (NYLON_GUITAR, 0), lambda: strums(("intro", "A2", "B", "C", "A3"))),
+        ("Nylon", (NYLON_GUITAR, 0), lambda: after_landing(strums(("intro", "A2", "B", "C", "A3")))
+         + [note(*at(0, i / 24), k(n), 3.5, 96 - 4 * i) for i, n in enumerate(CH["Bb"][4])]),
         ("Choir", (CHOIR_OOHS, 0), lambda: choir(("intro", "A2", "B", "C", "A3"))),
         ("Timpani", (TIMPANI, 0), main_timpani),
         ("Drums", (STANDARD_KIT, 128), main_drums),
