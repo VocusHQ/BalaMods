@@ -33,6 +33,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from lmmsgen import *  # noqa: F401,F403
 from crescendo_main import k  # noqa: E402
+from live import Live  # noqa: E402
+import random  # noqa: E402
 
 VERSION = os.environ.get("VERSION", "main")
 BPM, LEAD_IN, SPAN = 150, 1, 8
@@ -47,7 +49,7 @@ SECTIONS = [("intro", ["Bb", "Eb"]),
             ("A2", ["F", "Db", "Bb", "Eb", "F", "Bb", "Bb", "Eb"]),
             ("B", ["Gb", "Ab", "Gb", "Fm", "Cb", "Gb", "Fm", "F"]),
             ("C", ["Db", "F", "Db", "F", "Db", "Eb"]),
-            ("A3", ["F", "Db", "Bb", "Eb", "F", "Bb", "Bb", "Eb"])]
+            ("A3", ["F", "Db", "Bb", "Eb", "F", "Bb", "Bb", "F"])]  # A3 is a semitone up; its last span turns to F7 (V of Bb)
 FORM, SEC = [], []  # chord per span, (section, index in section) per span
 for _name, _chords in SECTIONS:
     for _i, _c in enumerate(_chords):
@@ -109,9 +111,23 @@ DUMS = (0, 2, 2.5, 4, 6, 6.5)  # the estampie beat, per span
 TEKS = (1, 1.5, 3, 5, 5.5, 7)
 
 
+# The hook: a dotted dance figure, answers the tune at the end of every 4-span A phrase (and opens the loop).
+HOOK = line("Bb3 5 .75, Db4 5.75 .25, Eb4 6 .5, F4 6.5 .5, Db4 7 .5, A3 7.5 .5")
+
+
+def hook_span(span):
+    sec, i = SEC[span]
+    return (sec in ("A1", "A2", "A3") and i % 4 == 3) or (sec, i) == ("intro", 1)
+
+
+def trim(span, lines):
+    """In a hook span the tune stops at beat 5 so the hook can answer."""
+    return [(b, key, min(l, 5 - b)) for b, key, l in lines if b < 5] if hook_span(span) else lines
+
+
 def tune_of(span):
     sec, i = SEC[span]
-    return {"A1": A_TUNE, "A2": A_TUNE, "A3": A_TUNE, "B": B_TUNE, "C": C_CALLS}.get(sec, [[]] * 8)[i]
+    return trim(span, {"A1": A_TUNE, "A2": A_TUNE, "A3": A_TUNE, "B": B_TUNE, "C": C_CALLS}.get(sec, [[]] * 8)[i])
 
 
 def at(span, beat):
@@ -141,7 +157,7 @@ def where(*keys):
     return out
 
 
-SCALE = {"intro": .8, "A1": .9, "A2": .96, "B": .86, "C": .8, "A3": 1.1}
+SCALE = {"intro": .8, "A1": .84, "A2": .94, "B": .84, "C": .8, "A3": 1.12}
 if VERSION != "main":  # the place versions hold one level all loop
     SCALE = {s: 1.0 for s in SCALE}
 
@@ -179,7 +195,12 @@ def tune(secs, shift=0, vel=96, clip=1.0):
 
 def span_tune(span_list, lines, shift=0, vel=96, clip=1.0):
     return [note(*at(s, b), key + shift, max(.2, l * clip - .08), v(s, vel, b / SPAN))
-            for s in span_list for b, key, l in lines[SEC[s][1]]]
+            for s in span_list for b, key, l in trim(s, lines[SEC[s][1]])]
+
+
+def hook(vel, shift=0, clip=1.0):
+    return [note(*at(s, b), key + shift, max(.2, l * clip - .08), v(s, vel)) for s in range(BARS) if hook_span(s)
+            for b, key, l in HOOK]
 
 
 def landing(shift, vel, beats=4):
@@ -231,21 +252,46 @@ def plucked_bass(span_list, beats=(0, 2.5, 4, 6.5), vel=104):  # the low end: ro
             for s in span_list for b in beats]
 
 
-def fill(s, vel):  # frame drum: DUM-DUM-DUM-DUM-ta-ta-ta-ta over the last two beats of a phrase
-    hits = [(6, LOW_FLOOR_TOM), (6.5, LOW_FLOOR_TOM), (7, HIGH_FLOOR_TOM), (7.25, HIGH_FLOOR_TOM),
-            (7.5, LOW_TOM), (7.75, LOW_TOM)]
-    return [note(*at(s, b), t, .25, v(s, vel - (6 if b % 1 else 0))) for b, t in hits]
+FILLS = [  # a live drummer never plays the same fill twice in a row
+    [(6, LOW_FLOOR_TOM), (6.5, LOW_FLOOR_TOM), (7, HIGH_FLOOR_TOM), (7.25, HIGH_FLOOR_TOM), (7.5, LOW_TOM), (7.75, LOW_TOM)],
+    [(6, LOW_FLOOR_TOM), (6.25, LOW_FLOOR_TOM), (6.5, HIGH_FLOOR_TOM), (7, LOW_TOM), (7.25, LOW_TOM), (7.5, HIGH_FLOOR_TOM),
+     (7.75, LOW_FLOOR_TOM), (6, KICK), (7, KICK)],
+    [(6, LOW_FLOOR_TOM), (6.75, LOW_FLOOR_TOM), (7, HIGH_FLOOR_TOM), (7.5, LOW_FLOOR_TOM), (7.75, LOW_FLOOR_TOM)],
+]
 
 
-def estampie(s, vel=100, fills=True, tek=66):
-    """One span of the dance beat: frame drum DUMs + stomps, rim teks."""
+def fill(s, vel):  # frame drum run over the last two beats of a phrase, one of three
+    return [note(*at(s, b), t, .25, v(s, vel - (6 if b % 1 else 0) + int(6 * (b - 6)))) for b, t in FILLS[s % 3]]
+
+
+def estampie(s, vel=100, fills=True, tek=66, stomps=True):
+    """One span of the dance beat: frame drum DUMs + stomps, rim teks, a few ghost teks."""
     out = []
+    rng = random.Random(s)
     cut = 6 if fills and last_in_phrase(s) else SPAN
     out += [note(*at(s, b), LOW_FLOOR_TOM, .3, v(s, vel if b in (0, 4) else vel - 14)) for b in DUMS if b < cut]
-    out += [note(*at(s, b), KICK, .3, v(s, vel + 4)) for b in DUMS[::2] if b < cut]  # stomps
+    if stomps:
+        out += [note(*at(s, b), KICK, .3, v(s, vel + 4)) for b in DUMS[::2] if b < cut]
+    out += [note(*at(s, q / 4), STICK, .15, 28 + rng.randrange(14)) for q in range(32)
+            if q / 4 < cut and q % 2 and rng.random() < .25]
     out += [note(*at(s, b), STICK, .2, v(s, tek)) for b in TEKS if b < cut]
     if cut < SPAN:
         out += fill(s, vel + 8)
+    return out
+
+
+def tabor(span_list, accents=(1, 3, 5, 7), vel=100, ghost=40, fills=True):
+    """The minstrel's tabor (a small snare drum): every eighth, backbeats hard, the rest ghosted. The dance's engine."""
+    out = []
+    for s in span_list:
+        rng = random.Random(2000 + s)
+        stop = 6 if fills and last_in_phrase(s) else SPAN
+        for e in range(stop * 2):
+            b = e / 2
+            if b in accents:
+                out.append(note(*at(s, b), SNARE, .25, v(s, vel, b / SPAN)))
+            elif ghost:
+                out.append(note(*at(s, b), SNARE, .2, ghost + rng.randrange(12) + (10 if b in (2.5, 6.5) else 0)))
     return out
 
 
@@ -294,9 +340,16 @@ def main_drums():
                 out += [note(*at(s, b), KICK, .3, v(s, 106)) for b in range(cut)]
                 if i == 5:
                     out += fill(s, 116)
-        else:
-            out += estampie(s, 104 if name == "A3" else 98)
+        else:  # A1a: no stomps yet, the band is still warming up
+            out += estampie(s, 104 if name == "A3" else 98, stomps=s not in where("A1a"))
     return out
+
+
+def main_tabor():  # light in A1a, rests in the stomp break, full in A2 and A3, piling up through C
+    c_hi = [s for s in spans("C") if SEC[s][1] >= 2]
+    return (tabor([1], vel=84, ghost=34, fills=False) + tabor(where("A1a"), vel=90, ghost=30)
+            + tabor(spans("A2"), vel=100, ghost=40) + tabor(spans("B"), (2, 6), 84, 0)
+            + tabor(c_hi, vel=104, ghost=46) + tabor(spans("A3"), vel=108, ghost=46))
 
 
 def main_claps():
@@ -318,16 +371,17 @@ def main_tracks():
         ("Bass", (ACOUSTIC_BASS, 0), lambda: after_landing(plucked_bass(spans(*every))) + [note(*at(0, 0), k("Bb1"), 3.9, 108)]),
         ("Lute", (NYLON_GUITAR, 0), lambda: after_landing(lute(spans("intro", "A1", "A2b", "C", "A3")))
          + strum([0], (0,), 100, 3.5) + span_tune(where("A2a"), A_TUNE, 0, 104) + strum(spans("B"))),
-        ("Harp", (HARP, 0), lambda: harp_chords(where("A1a", "A2", "A3")) + harp_ripple(spans("B"))
+        ("Harp", (HARP, 0), lambda: harp_chords(where("A2", "A3")) + harp_ripple(spans("B"))
          + [note(*at(0, 0), k(n), 3.5, 84) for n in CH["Bb"][2]]),
         ("Reed", (ENGLISH_HORN, 0), lambda: tune(("A3", "B", "C")) + span_tune(where("A1a"), A_TUNE)
-         + landing(0, 100)),
+         + landing(0, 100) + hook(104)),
         ("Fiddle", (FIDDLE, 0), lambda: span_tune(where("A1b"), A_TUNE, 0, 96) + tune(("A3",), 0, 80)
-         + span_tune(where("Bb"), B_TUNE, 0, 74) + tune(("C",), -12, 78) + landing(-12, 84)),
+         + span_tune(where("Bb"), B_TUNE, 0, 74) + tune(("C",), -12, 78) + landing(-12, 84) + hook(92, -12)),
         ("Cello", (CELLO, 0), lambda: span_tune(where("A2b", "A3"), COUNTER, 12, 84)),
         ("Nakers", (TIMPANI, 0), main_timpani),
         ("Drums", (STANDARD_KIT, 128), main_drums),
         ("Claps", (STANDARD_KIT, 128), main_claps),
+        ("Tabor", (STANDARD_KIT, 128), main_tabor),
     ]
 
 
@@ -358,10 +412,11 @@ def shop_tracks():
         ("Bassoon", (BASSOON_P, 0), shop_bassoon),
         ("Accordion", (ACCORDION, 0), musette),
         ("Bass", (ACOUSTIC_BASS, 0), lambda: plucked_bass(range(BARS), (0, 1.5, 4, 5.5), 96)),
-        ("Dulcimer", (DULCIMER, 0), lambda: tune(("A1", "A2", "A3"), 0, 92) + tune(("C",), -12, 80) + landing(0, 88)),
+        ("Dulcimer", (DULCIMER, 0), lambda: tune(("A1", "A2", "A3"), 0, 92) + tune(("C",), -12, 80) + landing(0, 88) + hook(92)),
         ("Harp", (HARP, 0), lambda: tune(("B",), 0, 92, clip=.5)),
         ("Drums", (STANDARD_KIT, 128), lambda: [note(*at(s, b), LOW_FLOOR_TOM, .3, 84) for s in range(BARS) for b in (2, 6)]
-         + [note(*at(s, bar + b), KICK, .3, 74 if b == 0 else 58) for s in range(BARS) for bar in (0, 4) for b in (0, 1.5)]),
+         + [note(*at(s, bar + b), KICK, .3, 80 if b == 0 else 64) for s in range(BARS) for bar in (0, 4) for b in (0, 1.5)]),
+        ("Tabor", (STANDARD_KIT, 128), lambda: tabor(range(BARS), (2, 6), 96, 40, fills=False)),
     ]
 
 
@@ -392,7 +447,7 @@ def packs_tracks():
         ("Bass", (CONTRABASS, 0), lambda: [note(*at(s, b), k(CH[FORM[s]][0]) - (12 if CH[FORM[s]][0][-1] != "1" else 0), 3.8, 100)
                                            for s in range(BARS) for b in (0, 4)]),
         ("Pizz", (PIZZ, 0), lambda: pizz_ripple(spans("intro", "A1", "A2", "B", "A3")) + tune(("C",), -12, 100, clip=.5)),
-        ("Viola", (VIOLA, 0), lambda: tune(("A1", "A2", "A3", "B"), -12, 98) + landing(-12, 90)),
+        ("Viola", (VIOLA, 0), lambda: tune(("A1", "A2", "A3", "B"), -12, 98) + landing(-12, 90) + hook(96, -12)),
         ("Hands", (STANDARD_KIT, 128), hand_drums),
         ("Drums", (STANDARD_KIT, 128), lambda: [note(*at(s, b), LOW_FLOOR_TOM, .3, 82) for s in spans(*every) for b in (0, 4)]),
     ]
@@ -425,7 +480,7 @@ def planet_tracks():
         ("Choir", (CHOIR_AAHS, 0), lambda: held(every, lambda s: CH[FORM[s]][2][:3], 0, 66)),
         ("Harp", (HARP, 0), slow_harp),
         ("Recorder", (RECORDER, 0), lambda: tune(("A1", "A2", "A3"), -12, 86) + tune(("B",), 0, 80) + tune(("C",), -12, 74)
-         + landing(-12, 80)),
+         + landing(-12, 80) + hook(84, -12)),
     ]
 
 
@@ -480,28 +535,73 @@ def boss_tracks():
         ("Cello", (CELLO, 0), lambda: [note(*at(s, 0), k("F3") + SEC[s][1] % 4, SPAN - .2, wave(s, 90)) for s in not_c]),
         ("Choir", (CHOIR_AAHS, 0), lambda: [note(*at(s, 0), k(n), SPAN - .2, wave(s, 74)) for s in not_c
                                             for n in ("F2", "C3", "Db3")]),
-        ("Reed", (ENGLISH_HORN, 0), lambda: tune(("A1", "A2", "A3"), 0, 100, clip=.45) + landing(0, 96, 1)),
-        ("Fiddle", (FIDDLE, 0), lambda: tune(("B",), -12, 96, clip=.6)
+        ("Reed", (ENGLISH_HORN, 0), lambda: tune(("A1", "A2", "A3"), 0, 100, clip=.45) + landing(0, 96, 1)
+         + hook(100, 0, .5)),
+        ("Fiddle", (FIDDLE, 0), lambda: tune(("B",), -12, 96, clip=.6) + hook(92, -12, .5)
          + [note(*at(s, b), key, .4, wave(s, 88)) for s in not_c for b in (2.5, 6.5) for key in (k("F3"), k("Gb3"))]),
         ("Nakers", (TIMPANI, 0), boss_timpani),
         ("Drums", (STANDARD_KIT, 128), march),
         ("Ticks", (STANDARD_KIT, 128), tick),
+        ("Tabor", (STANDARD_KIT, 128), lambda: tabor(range(BARS), (3, 7), 100, 0, fills=False)
+         + [note(*at(s, 7 + j / 6), SNARE, .15, 50 + 10 * j) for s in range(BARS) if last_in_phrase(s) for j in range(6)]),
     ]
 
 
 TRACKS = {"main": main_tracks, "shop": shop_tracks, "packs": packs_tracks, "planet": planet_tracks,
           "boss": boss_tracks}[VERSION]()
 
+# ---- the live band --------------------------------------------------------------------------------
+# Every version: A3 a semitone up (all versions, so crossfades stay in tune), timing/velocity wobble.
+# Main only: the break. The last C span hits once on beat 5, stops dead, and the pickup brings A3 in.
+LIVE = Live(LEAD_IN, SPAN)
+UP = spans("A3")[:-1]
+C_LAST = spans("C")[-1]
+
+
+def _eb(*ns, vel=112, ln=.9):
+    return [note(*at(C_LAST, 4), k(n), ln, vel) for n in ns]
+
+
+HIT = {  # the unison hit before the break (C's last chord, Eb minor)
+    "Bass": _eb("Eb1", vel=124, ln=1),
+    "Bassoon": _eb("Eb2", vel=116),
+    "Nakers": _eb("Eb2", vel=124, ln=1.5),
+    "Drums": [note(*at(C_LAST, 4), KICK, .5, 124), note(*at(C_LAST, 4), LOW_FLOOR_TOM, .5, 120)],
+    "Tabor": [note(*at(C_LAST, 4), SNARE, .5, 120)],
+    "Lute": [note(*at(C_LAST, 4 + i / 48), k(n), .9, 112) for i, n in enumerate(CH["Eb"][2])],
+    "Harp": _eb(*CH["Eb"][2], vel=100),
+    "Reed": _eb("Eb4", "Gb4"),
+    "Fiddle": _eb("Bb3"),
+    "Cello": _eb("Eb3"),
+}
+
+
+def _post(name, prog, fn):
+    drums = prog[1] == 128
+
+    def run():
+        notes = fn()
+        if VERSION == "main":
+            notes = LIVE.cut(notes + HIT.get(name, []), C_LAST)
+        if not drums:
+            notes = LIVE.shift(notes, UP)
+        return LIVE.humanize(notes, f"{VERSION}-{name}", 2 if drums else 1, 8 if drums else 5)
+    return run
+
+
+TRACKS = [(n, p, _post(n, p, f)) for n, p, f in TRACKS]
+
 # gain, wobble (fast cents, Hz, slow cents, Hz)
 MIX = {"Bassoon": (0.55, 0, 0, 0, 0), "Drone": (0.22, 4, 5, 4, 0.3), "Lute": (0.75, 0, 0, 0, 0), "Harp": (0.5, 0, 0, 0, 0),
        "Reed": (0.65, 0, 0, 0, 0), "Fiddle": (0.5, 0, 0, 0, 0), "Cello": (0.6, 0, 0, 0, 0), "Nakers": (0.8, 0, 0, 0, 0),
-       "Drums": (0.65, 0, 0, 0, 0), "Claps": (0.22, 0, 0, 0, 0), "Accordion": (0.3, 4, 5, 4, 0.3),
-       "Dulcimer": (0.6, 0, 0, 0, 0), "Ticks": (0.35, 0, 0, 0, 0), "Pizz": (0.7, 0, 0, 0, 0), "Viola": (0.7, 8, 5, 0, 0),
-       "Hands": (0.55, 0, 0, 0, 0), "Bass": (1.1, 0, 0, 0, 0), "Strings": (0.8, 0, 0, 8, 0.3), "Choir": (0.55, 0, 0, 6, 0.3),
+       "Drums": (1.6, 0, 0, 0, 0), "Claps": (0.5, 0, 0, 0, 0),
+       "Tabor": (1.3, 0, 0, 0, 0), "Accordion": (0.3, 4, 5, 4, 0.3),
+       "Dulcimer": (0.6, 0, 0, 0, 0), "Ticks": (0.5, 0, 0, 0, 0), "Pizz": (0.7, 0, 0, 0, 0), "Viola": (0.7, 8, 5, 0, 0),
+       "Hands": (0.9, 0, 0, 0, 0), "Bass": (1.1, 0, 0, 0, 0), "Strings": (0.8, 0, 0, 8, 0.3), "Choir": (0.55, 0, 0, 6, 0.3),
        "Recorder": (0.6, 6, 5, 0, 0)}
-LOWPASS = {"Lute": 2400, "Harp": 2400, "Drone": 1200, "Reed": 1600, "Fiddle": 1500, "Cello": 1600, "Drums": 1500,
-           "Claps": 1200, "Nakers": 2000, "Accordion": 1400, "Dulcimer": 1600, "Ticks": 2000, "Pizz": 2400,
-           "Viola": 1800, "Hands": 1500, "Choir": 2200, "Recorder": 1600}
+LOWPASS = {"Lute": 2400, "Harp": 2400, "Drone": 1200, "Reed": 1600, "Fiddle": 1500, "Cello": 1600, "Drums": 3500,
+           "Claps": 3000, "Tabor": 4000, "Nakers": 2000, "Accordion": 1400, "Dulcimer": 1600, "Ticks": 3500, "Pizz": 2400,
+           "Viola": 1800, "Hands": 3000, "Choir": 2200, "Recorder": 1600}
 if VERSION == "planet":  # heavily muffled, like Balatro's planet version
     LOWPASS = {name: 1200 for name in MIX}
 if VERSION == "packs":  # darker than main

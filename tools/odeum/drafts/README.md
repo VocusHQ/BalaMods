@@ -14,6 +14,7 @@ module into an mp3 for listening, and `export_pack.py` writes the five game vers
 | `crescendo_versions.py` | **Crescendo** shop, packs, planet and boss (`VERSION=`) |
 | `crescendo_main*.py`, `crescendo_bolero.py`, `crescendo_samples.py` | earlier Crescendo steps; the two files above import their form, tunes and voicings |
 | `basilicus.py` | **Basilicus**: medieval estampie, 4/4 straight eighths, all five versions (`VERSION=main\|shop\|packs\|planet\|boss`) |
+| `live.py` | Shared live-band helpers for Vesper and Basilicus: humanize, key change, break |
 | `basilicus_samples.py` | the two Basilicus samples Locked chose from, `SAMPLE=estampie\|dance7` |
 | `vesper.py` | **Vesper**: spaghetti-western ride, 4/4 triplet shuffle, all five versions (`VERSION=main\|shop\|packs\|planet\|boss`) |
 
